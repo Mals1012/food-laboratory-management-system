@@ -1,0 +1,26 @@
+{
+  "name": "foodlab-lims",
+  "version": "1.0.0",
+  "description": "FoodLab LIMS - Food Processing Laboratory Information and Quality Management System",
+  "scripts": {
+    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install",
+    "install:all": "npm run install:server && npm run install:client",
+    "seed": "cd server && npm run seed",
+    "server": "cd server && npm start",
+    "server:dev": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd server && node index.js"
+  },
+  "keywords": [
+    "lims",
+    "food-processing",
+    "laboratory",
+    "quality-assurance",
+    "coa",
+    "food-safety"
+  ],
+  "author": "FoodLab Engineering Team",
+  "license": "ISC"
+}
