@@ -24,6 +24,22 @@ const QAReviewPage = () => {
   const { user, canReviewQA } = useAuth();
   const [searchParams] = useSearchParams();
 
+  const getBatchIdDisplay = (t) => {
+    if (!t) return '';
+    if (typeof t.batchId === 'object' && t.batchId !== null) {
+      return t.batchId.batchId || '';
+    }
+    return t.batchId || t.batch?.batchId || '';
+  };
+
+  const getProductNameDisplay = (t) => {
+    if (!t) return 'Food Product';
+    if (typeof t.batchId === 'object' && t.batchId !== null && t.batchId.productName) {
+      return t.batchId.productName;
+    }
+    return t.batch?.productName || 'Food Product';
+  };
+
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterTab, setFilterTab] = useState('Submitted'); // 'Submitted' | 'All' | 'Reviewed'
@@ -34,17 +50,19 @@ const QAReviewPage = () => {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState('');
+  const [pendingCount, setPendingCount] = useState(0);
 
   const fetchSubmittedTests = async () => {
     try {
       setLoading(true);
-      const params = {
-        outcome: filterTab === 'Submitted' ? 'Submitted' : undefined,
-        limit: 50,
-      };
-      const res = await testService.getTests(params);
+      const res = await testService.getTests({ limit: 100 });
       if (res.success) {
-        if (filterTab === 'Reviewed') {
+        const submitted = res.data.filter((t) => t.overallOutcome === 'Submitted');
+        setPendingCount(submitted.length);
+
+        if (filterTab === 'Submitted') {
+          setTests(submitted);
+        } else if (filterTab === 'Reviewed') {
           setTests(res.data.filter((t) => t.overallOutcome === 'Pass' || t.overallOutcome === 'Fail'));
         } else {
           setTests(res.data);
@@ -106,8 +124,6 @@ const QAReviewPage = () => {
       setReviewSubmitting(false);
     }
   };
-
-  const pendingCount = tests.filter((t) => t.overallOutcome === 'Submitted').length;
 
   return (
     <div className="space-y-6">
@@ -213,10 +229,10 @@ const QAReviewPage = () => {
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-slate-800 font-mono">
-                          {test.batchId}
+                          {getBatchIdDisplay(test)}
                         </div>
                         <div className="text-[10px] text-slate-400">
-                          {test.batch?.productName || 'Batch'}
+                          {getProductNameDisplay(test)}
                         </div>
                       </td>
                       <td className="py-3.5 px-4 font-medium text-slate-700">
@@ -289,7 +305,7 @@ const QAReviewPage = () => {
                   </h3>
                   <p className="text-xs text-slate-500">
                     Test: <strong className="font-mono">{activeTest.testId}</strong> &bull; Batch:{' '}
-                    <strong className="font-mono">{activeTest.batchId}</strong> ({activeTest.testCategory})
+                    <strong className="font-mono">{getBatchIdDisplay(activeTest)}</strong> ({activeTest.testCategory})
                   </p>
                 </div>
               </div>

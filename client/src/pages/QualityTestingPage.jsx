@@ -26,8 +26,24 @@ import { useAuth } from '../hooks/useAuth';
 import { formatDate, getStatusBadgeClass } from '../utils/formatters';
 
 const QualityTestingPage = () => {
-  const { user, canPerformTests } = useAuth();
+  const { user, canPerformTests, hasRole } = useAuth();
   const [searchParams] = useSearchParams();
+
+  const getBatchIdDisplay = (t) => {
+    if (!t) return '';
+    if (typeof t.batchId === 'object' && t.batchId !== null) {
+      return t.batchId.batchId || '';
+    }
+    return t.batchId || t.batch?.batchId || '';
+  };
+
+  const getProductNameDisplay = (t) => {
+    if (!t) return 'Food Product';
+    if (typeof t.batchId === 'object' && t.batchId !== null && t.batchId.productName) {
+      return t.batchId.productName;
+    }
+    return t.batch?.productName || 'Food Product';
+  };
 
   const [tests, setTests] = useState([]);
   const [total, setTotal] = useState(0);
@@ -349,10 +365,10 @@ const QualityTestingPage = () => {
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-slate-800 font-mono">
-                          {test.batchId}
+                          {getBatchIdDisplay(test)}
                         </div>
                         <div className="text-[10px] text-slate-400">
-                          {test.batch?.productName || 'Food Batch'}
+                          {getProductNameDisplay(test)}
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
@@ -580,7 +596,7 @@ const QualityTestingPage = () => {
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-1">
-                  Batch: <strong>{activeTestModal.batchId}</strong> &bull; Analyst:{' '}
+                  Batch: <strong>{getBatchIdDisplay(activeTestModal)}</strong> &bull; Analyst:{' '}
                   <strong>{activeTestModal.analystName}</strong> &bull; Sample:{' '}
                   {activeTestModal.sampleDescription}
                 </p>
@@ -779,6 +795,20 @@ const QualityTestingPage = () => {
                 >
                   Close
                 </button>
+
+                {modalMode === 'view' &&
+                  canPerformTests() &&
+                  activeTestModal.overallOutcome !== 'Pass' &&
+                  activeTestModal.overallOutcome !== 'Fail' && (
+                    <button
+                      type="button"
+                      onClick={() => setModalMode('edit')}
+                      className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-all"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      <span>Record Readings</span>
+                    </button>
+                  )}
 
                 {modalMode === 'edit' &&
                   canPerformTests() &&
