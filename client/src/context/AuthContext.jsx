@@ -22,8 +22,17 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('foodlab_user', JSON.stringify(res.user));
           }
         } catch (err) {
-          console.error('[Auth Error] Session invalid:', err);
-          logout();
+          // Only clear session if server explicitly rejected the token with 401
+          if (err.response && err.response.status === 401) {
+            console.warn('[Auth] Session expired or invalid, logging out.');
+            logout();
+          } else {
+            // Keep local session if backend is temporarily unreachable
+            const saved = localStorage.getItem('foodlab_user');
+            if (saved) {
+              setUser(JSON.parse(saved));
+            }
+          }
         }
       }
       setLoading(false);

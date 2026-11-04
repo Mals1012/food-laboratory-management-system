@@ -57,6 +57,7 @@ const LoginPage = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
+        err.message ||
         'Authentication failed. Please verify your credentials.'
       );
     } finally {
@@ -76,7 +77,7 @@ const LoginPage = () => {
         setTimeout(() => navigate('/'), 400);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Quick login failed.');
+      setError(err.response?.data?.message || err.message || 'Quick login failed.');
     } finally {
       setLoading(false);
     }
